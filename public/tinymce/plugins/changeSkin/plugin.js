@@ -1,6 +1,7 @@
 (function () {
     const global = window.tinymce.util.Tools.resolve('tinymce.PluginManager');
     const register = editor => {
+        const skin_css_id = editor.getParam('skin_id', 'mce-u0') //这是在没有跟其它引入冲突是tinymce自己给引入的皮肤css <link> 添加的id,所以请灵活修改
         const letter_spacing_formats = editor.getParam('skin_list', [
             {text: 'oxide', href: '/tinymce/skins/ui/oxide/skin.min.css'},
             {text: 'oxide-dark', href: '/tinymce/skins/ui/oxide-dark/skin.min.css'}
@@ -18,16 +19,16 @@
                         value: item.text,
                         active: lhv === item.text,
                         onAction: () => {
-                            let skin_css = document.querySelector('head > #mce-u0')
-                            if (!skin_css) {
+                            let skin_css = document.querySelector(`head > #${skin_css_id}`)
+                            if (skin_css) {
+                                skin_css.href = item.href
+                            } else {
                                 skin_css = document.createElement('link')
                                 skin_css.rel = 'stylesheet'
                                 skin_css.type = 'text/css'
-                                skin_css.id = 'mce-u0'
+                                skin_css.id = skin_css_id
                                 skin_css.href = item.href
                                 document.head.append(skin_css)
-                            } else {
-                                skin_css.href = item.href
                             }
                             editor.options.set('skin', item.text)
                         }
