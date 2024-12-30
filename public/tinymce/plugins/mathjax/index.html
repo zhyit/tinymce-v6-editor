@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="renderer" content="webkit">
+  <title>数学公式</title>
+  <script>
+    MathJax = {
+      options: {
+        processHtmlClass: 'math-tex',
+        ignoreHtmlClass: '.*'
+      }
+    }
+  </script>
+  <script id="MathJax-script" async src="es5/tex-mml-svg.js"></script>
+  <script>
+    window.onload = () => {
+      const textarea = document.getElementById('mathjax-text')
+      const resultEl = document.getElementById('mathjax-result')
+      const optionPanelLabelEl = document.querySelector('.option-panel-label')
+
+      //获取url地址栏传参
+      function getQueryVariable(variable) {
+        let query = window.location.search.substring(1);
+        let vars = query.split("&");
+        for (let i = 0; i < vars.length; i++) {
+          let pair = vars[i].split("=");
+          if (pair[0] === variable) {
+            textarea.value = decodeURIComponent(pair[1]);
+            setResult(textarea.value)
+          }
+        }
+      }
+
+      getQueryVariable('latex')
+
+      function handleSelectionChange(latex) {
+        if (document.selection) {
+          textarea.focus()
+          let sel = document.selection.createRange()
+          sel.text = latex
+          sel.select()
+        } else if (textarea.selectionStart || textarea.selectionStart === 0) {
+          const startPosition = textarea.selectionStart
+          const endPosition = textarea.selectionEnd
+          textarea.value = textarea.value.substring(0, startPosition) + latex + textarea.value.substring(endPosition, textarea.value.length)
+          textarea.focus()
+        } else {
+          textarea.value += latex
+          textarea.focus()
+        }
+        setResult(textarea.value)
+      }
+
+      function setResult(text) {
+        MathJax.typesetClear([resultEl])
+        resultEl.setAttribute('data-latex', '')
+        if (text) {
+          const code = '$$ ' + text + ' $$'
+          resultEl.setAttribute('data-latex', code)
+          resultEl.innerHTML = code
+          MathJax.typesetPromise([resultEl]).then(() => {
+            // console.log(resultEl)
+            // the new content is has been typeset
+            // console.log(node)
+          })
+        } else {
+          resultEl.innerHTML = ''
+        }
+      }
+
+      window.addEventListener('message', function (event) {
+        let node = document.createElement('span');
+        node.setAttribute('contenteditable', false)
+        node.classList.add('math-tex')
+        node.style.cursor = 'pointer'
+        let latex = document.getElementById("mathjax-text").value
+        if (latex) {
+          latex = '$ ' + latex + ' $'
+          node.setAttribute('data-latex', latex);
+          node.innerText = latex;
+        }
+
+        let a = document.createElement('span');
+        a.appendChild(node)
+        window.parent.postMessage({
+          mceAction: 'insertContent',
+          content: a.innerHTML
+        }, '*');
+        window.parent.postMessage({
+          mceAction: 'close'
+        }, '*');
+      })
+      const optionPanelEls = document.querySelectorAll('.option-panel')
+      const optionBtnEls = document.querySelectorAll('.option-btn')
+      // 面板点击事件
+      for (let i = 0; i < optionPanelEls.length; i++) {
+        optionPanelEls[i].addEventListener('click', (e) => {
+          for (let j = 0; j < optionPanelEls.length; j++) {
+            if (i === j) {
+              if (optionBtnEls[j].style.display === 'inline') {
+                optionBtnEls[j].style.display = 'none'
+              } else {
+                optionBtnEls[j].style.display = 'inline'
+              }
+            } else {
+              optionBtnEls[j].style.display = 'none'
+            }
+          }
+        })
+      }
+      // 语言选项点击事件
+      const btnItemMainLabelEls = document.querySelectorAll('.option-btn-item-main-label')
+      for (let i = 0; i < btnItemMainLabelEls.length; i++) {
+        btnItemMainLabelEls[i].addEventListener('click', (e) => {
+          optionPanelLabelEl.innerText = e.target.innerText
+          e.target.parentElement.parentElement.style.display = 'none'
+        })
+      }
+      // 公式按钮点击事件
+      const btnItemGroupSpanEls = document.querySelectorAll('.option-btn-item-group span')
+      for (let i = 0; i < btnItemGroupSpanEls.length; i++) {
+        btnItemGroupSpanEls[i].addEventListener('click', (e) => {
+          handleSelectionChange(e.target.attributes['data-latex'].value)
+          e.target.parentElement.parentElement.parentElement.style.display = 'none'
+        })
+      }
+      // 监听textarea的数据变化，实时更新公式展示
+      document.getElementById("mathjax-text").addEventListener('input', async (e) => {
+        setResult(e.target.value)
+      })
+      // 选项
+      const optionBoxLabelEl = document.querySelector('.option-item-box-label')
+      const optionBoxLabelSpanEl = document.querySelector('.option-item-box-label span')
+      const optionBoxSelEl = document.querySelector('.option-item-box-sel')
+      const optionBoxSelSpanEls = document.querySelectorAll('.option-item-box-sel span')
+      const optionBoxBtnGroupEls = document.querySelectorAll('.option-item-box-btn-group')
+      const optionBoxBtnGroupSpanEls = document.querySelectorAll('.option-item-box-btn-group span')
+      optionBoxBtnGroupEls[0].style.display = 'inline'
+      // 下拉框点击事件
+      optionBoxLabelEl.addEventListener('click', () => {
+        if (optionBoxSelEl.style.display === 'none') {
+          optionBoxSelEl.style.display = 'inline'
+        } else {
+          optionBoxSelEl.style.display = 'none'
+        }
+      })
+      for (let i = 0; i < optionBoxSelSpanEls.length; i++) {
+        optionBoxSelSpanEls[i].addEventListener('click', (e) => {
+          optionBoxLabelSpanEl.innerText = e.target.innerText
+          optionBoxSelEl.style.display = 'none'
+          for (let j = 0; j < optionBoxBtnGroupEls.length; j++) {
+            if (i === j) {
+              optionBoxBtnGroupEls[j].style.display = 'inline'
+            } else {
+              optionBoxBtnGroupEls[j].style.display = 'none'
+            }
+          }
+        })
+      }
+      // 下拉框对应公式按钮点击事件
+      for (let i = 0; i < optionBoxBtnGroupSpanEls.length; i++) {
+        optionBoxBtnGroupSpanEls[i].addEventListener('click', (e) => {
+          handleSelectionChange(e.target.attributes['data-latex'].value)
+        })
+      }
+      // 页面点击事件
+      document.addEventListener("click", function (event) {
+        for (let i = 0; i < optionBtnEls.length; i++) {
+          // 判断点击的位置是否在div元素外部
+          if (!optionBtnEls[i].contains(event.target) && !optionPanelEls[i].contains(event.target)) {
+            // 隐藏div元素
+            optionBtnEls[i].style.display = "none"
+          }
+          if (!optionBoxSelEl.contains(event.target) && !optionBoxLabelEl.contains(event.target)) {
+            optionBoxSelEl.style.display = 'none'
+          }
+        }
+      })
+    }
+  </script>
+  <style>
+    .option-main {
+      display: flex;
+      background-color: #f6f5ee;
+      border: 1px solid #ccc;
+      font-size: 12px;
+      padding: 10px;
+      height: 100px;
+    }
+
+    .option-item {
+      width: 65px;
+      height: 100px;
+      position: relative;
+      margin: 0 5px 0 5px;
+    }
+
+    .option-panel {
+      position: relative;
+      height: 100%;
+      text-align: center;
+    }
+
+    .option-panel:hover {
+      background-color: #00A77D;
+      cursor: pointer;
+    }
+
+    .choose-panel-sign {
+      height: 33px;
+      width: 33px;
+      background-image: url(img/formula-editor-icons.png);
+      background-repeat: no-repeat;
+      display: inline-block;
+    }
+
+    .option-panel-label {
+      text-align: center;
+    }
+
+    .option-panel-arrow-down {
+      position: absolute;
+      bottom: 0;
+      right: 29px;
+      display: inline-block;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 6px 5px 0;
+      border-color: #444 transparent transparent;
+    }
+
+    .option-btn-item-main {
+      top: 10px;
+      width: 65px;
+      background-color: #fff;
+      box-shadow: 0 0 4px rgba(0, 0, 0, .11);
+      border: 1px solid #b3aead;
+    }
+
+    .option-btn-item-main-label {
+      height: 30px;
+      line-height: 30px;
+      padding-left: 10px;
+    }
+
+    .option-btn-item-main-label:hover {
+      background-color: #00A77D;
+      cursor: pointer;
+    }
+
+    .option-btn {
+      display: none;
+      position: absolute;
+      top: 110px;
+    }
+
+    .option-btn-item {
+      width: 260px;
+      background-color: #fff;
+      box-shadow: 0 0 4px rgba(0, 0, 0, .11);
+      border: 1px solid #b3aead;
+    }
+
+    .option-btn-item-label {
+      height: 20px;
+      line-height: 20px;
+      padding-left: 10px;
+      background-color: #f6f5ee;
+    }
+
+    .option-btn-item-group {
+      padding: 5px;
+    }
+
+    .option-btn-item-group span {
+      width: 33px;
+      height: 33px;
+      border: 1px solid #ccc;
+      margin: 0 3px 2px 0;
+      background-image: url(img/formula-editor-icons.png);
+      background-repeat: no-repeat;
+      display: inline-block;
+
+    }
+
+    .option-btn-item-group span:hover {
+      border-color: #00A77D;
+      cursor: pointer;
+    }
+
+    .option-item-box {
+      width: 350px;
+      height: 100%;
+      position: relative;
+      background-color: #fff;
+    }
+
+    .option-item-box-label {
+      width: 343px;
+      height: 20px;
+      line-height: 20px;
+      padding-left: 5px;
+      border: 1px solid #b3aead;
+    }
+
+    .option-item-box-label:hover {
+      cursor: pointer;
+      background-color: #fff;
+    }
+
+    .option-item-box-label-arrow-down {
+      position: absolute;
+      top: 10px;
+      right: 5px;
+      display: inline-block;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 6px 5px 0;
+      border-color: #444 transparent transparent;
+    }
+
+    .option-item-box-sel {
+      display: none;
+      position: absolute;
+      top: 20px;
+      background-color: #fff;
+    }
+
+    .option-item-box-sel span {
+      width: 333px;
+      display: inline-block;
+      height: 30px;
+      line-height: 30px;
+      border: 1px solid #b3aead;
+      padding-left: 15px;
+    }
+
+    .option-item-box-sel span:hover {
+      background-color: #00A77D;
+      cursor: pointer;
+    }
+
+    .option-item-box-btn {
+      height: 68px;
+      padding: 5px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .option-item-box-btn-group {
+      display: none;
+    }
+
+    .option-item-box-btn-group span {
+      border: 1px solid #ccc;
+      margin: 0 3px 2px 0;
+      width: 22px;
+      height: 22px;
+      background-image: url(img/formula-editor-icons.png);
+      background-repeat: no-repeat;
+      display: inline-block;
+      cursor: pointer;
+    }
+
+    .option-item-box-btn-group span:hover {
+      border-color: #00A77D;
+    }
+
+    .arrow-btn {
+        position: absolute;
+        right: 0;
+    }
+  </style>
+</head>
+<body>
+<div class="option-main">
+  <div class="option-item">
+    latex
+    <!--        <div class="option-panel">
+                <div class="option-panel-label">latex</div>
+                <div class="option-panel-arrow-down"></div>
+            </div>
+            <div class="option-btn">
+                <div class="option-btn-item-main">
+                    <div class="option-btn-item-main-label">latex</div>
+                    <div class="option-btn-item-main-label">mathml</div>
+                </div>
+            </div>-->
+  </div>
+  <div class="option-item-box">
+    <div class="option-item-box-label">
+      <span>基础数学</span>
+      <div class="option-item-box-label-arrow-down"></div>
+    </div>
+    <div class="option-item-box-sel">
+      <span>基础数学</span>
+      <span>希腊字母</span>
+      <span>希腊字母</span>
+      <span>关系运算符</span>
+      <span>集合</span>
+      <span>几何</span>
+    </div>
+    <div class="option-item-box-btn">
+      <div class="option-item-box-btn-group">
+        <span style="background-position:-5px -8680px;" data-latex="+ "></span>
+        <span style="background-position:-5px -7441px;" data-latex="- "></span>
+        <span style="background-position:-5px -7569px;" data-latex="\times "></span>
+        <span style="background-position:-5px -3162px;" data-latex="\div "></span>
+        <span style="background-position:-5px -7377px;" data-latex="\cdot "></span>
+        <span style="background-position:-5px -8648px;" data-latex="\pm "></span>
+        <span style="background-position:-5px -7409px;" data-latex="\mp "></span>
+        <span style="background-position:-5px -4487px;" data-latex="/ "></span>
+        <span style="background-position:-5px -9258px;" data-latex="\setminus "></span>
+        <span style="background-position:-5px -9290px;" data-latex="\prime "></span>
+        <span style="background-position:-5px -487px;" data-latex="\ast "></span>
+        <span style="background-position:-5px -10155px;" data-latex="\circ  "></span>
+        <span style="background-position:-5px -1227px;" data-latex="\bullet "></span>
+        <span style="background-position:-5px -2873px;" data-latex="^{\circ}  "></span>
+        <span style="background-position:-5px -10476px;" data-latex="' "></span>
+        <span style="background-position:-5px -3258px;" data-latex="'' "></span>
+        <span style="background-position:-5px -3044px;" data-latex="\mathrm{d} "></span>
+        <span style="background-position:-5px -4273px;" data-latex="e "></span>
+        <span style="background-position:-5px -8573px;" data-latex="\pi "></span>
+        <span style="background-position:-5px -3814px;" data-latex="\varnothing "></span>
+        <span style="background-position:-5px -5107px;" data-latex="\triangle "></span>
+        <span style="background-position:-5px -7601px;" data-latex="\nabla "></span>
+        <span style="background-position:-5px -5139px;" data-latex="\infty "></span>
+        <span style="background-position:-5px -2123px;" data-latex="\circledast "></span>
+        <span style="background-position:-5px -2219px;" data-latex="\odot "></span>
+        <span style="background-position:-5px -2155px;" data-latex="\circleddash "></span>
+        <span style="background-position:-5px -2251px;" data-latex="\oplus "></span>
+        <span style="background-position:-5px -2283px;" data-latex="\otimes "></span>
+      </div>
+      <div class="option-item-box-btn-group">
+        <span style="background-position:-5px -112px;" data-latex="\alpha "></span>
+        <span style="background-position:-5px -658px;" data-latex="\beta "></span>
+        <span style="background-position:-5px -4605px;" data-latex="\gamma "></span>
+        <span style="background-position:-5px -2905px;" data-latex="\delta "></span>
+        <span style="background-position:-5px -4177px;" data-latex="\epsilon "></span>
+        <span style="background-position:-5px -13066px;" data-latex="\zeta "></span>
+        <span style="background-position:-5px -4241px;" data-latex="\eta "></span>
+        <span style="background-position:-5px -11750px;" data-latex="\theta "></span>
+        <span style="background-position:-5px -11782px;" data-latex="\vartheta "></span>
+        <span style="background-position:-5px -5665px;" data-latex="\iota "></span>
+        <span style="background-position:-5px -5697px;" data-latex="\kappa "></span>
+        <span style="background-position:-5px -5729px;" data-latex="\lambda "></span>
+        <span style="background-position:-5px -7473px;" data-latex="\mu "></span>
+        <span style="background-position:-5px -8103px;" data-latex="\nu "></span>
+        <span style="background-position:-5px -13002px;" data-latex="\xi "></span>
+        <span style="background-position:-5px -8167px;" data-latex="o "></span>
+        <span style="background-position:-5px -8509px;" data-latex="\pi "></span>
+        <span style="background-position:-5px -8541px;" data-latex="\varpi "></span>
+        <span style="background-position:-5px -9322px;" data-latex="\rho "></span>
+        <span style="background-position:-5px -10401px;" data-latex="\sigma "></span>
+        <span style="background-position:-5px -4391px;" data-latex="\varsigma "></span>
+        <span style="background-position:-5px -11622px;" data-latex="\tau "></span>
+        <span style="background-position:-5px -12639px;" data-latex="\upsilon "></span>
+        <span style="background-position:-5px -8445px;" data-latex="\phi "></span>
+        <span style="background-position:-5px -8477px;" data-latex="\varphi "></span>
+        <span style="background-position:-5px -2059px;" data-latex="\chi "></span>
+        <span style="background-position:-5px -9023px;" data-latex="\psi "></span>
+        <span style="background-position:-5px -8135px;" data-latex="\omega "></span>
+        <span style="background-position:-5px -1259px;" data-latex="A "></span>
+        <span style="background-position:-5px -1291px;" data-latex="B "></span>
+        <span style="background-position:-5px -1451px;" data-latex="\Gamma "></span>
+        <span style="background-position:-5px -1355px;" data-latex="\Delta "></span>
+        <span style="background-position:-5px -1387px;" data-latex="E "></span>
+        <span style="background-position:-5px -1995px;" data-latex="Z "></span>
+        <span style="background-position:-5px -1419px;" data-latex="H "></span>
+        <span style="background-position:-5px -1899px;" data-latex="\Theta "></span>
+        <span style="background-position:-5px -1483px;" data-latex="I "></span>
+        <span style="background-position:-5px -1515px;" data-latex="K "></span>
+        <span style="background-position:-5px -1547px;" data-latex="\Lambda "></span>
+        <span style="background-position:-5px -1963px;" data-latex="X "></span>
+        <span style="background-position:-5px -1675px;" data-latex="O "></span>
+        <span style="background-position:-5px -1739px;" data-latex="\Pi "></span>
+        <span style="background-position:-5px -1803px;" data-latex="P "></span>
+        <span style="background-position:-5px -1835px;" data-latex="\Sigma "></span>
+        <span style="background-position:-5px -1867px;" data-latex="T "></span>
+        <span style="background-position:-5px -1931px;" data-latex="\Upsilon "></span>
+        <span style="background-position:-5px -1707px;" data-latex="\Phi "></span>
+        <span style="background-position:-5px -1323px;" data-latex="X "></span>
+        <span style="background-position:-5px -1771px;" data-latex="\Psi "></span>
+        <span style="background-position:-5px -1643px;" data-latex="\Omega "></span>
+      </div>
+      <div class="option-item-box-btn-group">
+        <span style="background-position:-5px -5px;" data-latex="\alpha "></span>
+        <span style="background-position:-5px -3782px;" data-latex="\ell "></span>
+        <span style="background-position:-5px -9194px;" data-latex="\Re "></span>
+        <span style="background-position:-5px -5043px;" data-latex="\Im "></span>
+        <span style="background-position:-5px -5075px;" data-latex="i "></span>
+        <span style="background-position:-5px -9055px;" data-latex="\jmath "></span>
+        <span style="background-position:-5px -7676px;" data-latex="\mathbb{I} "></span>
+        <span style="background-position:-5px -9162px;" data-latex="\mathbb{R} "></span>
+        <span style="background-position:-5px -5171px;" data-latex="\mathbb{Z} "></span>
+        <span style="background-position:-5px -2315px;" data-latex="\mathbb{C} "></span>
+        <span style="background-position:-5px -5011px;" data-latex="\mathbb{I} "></span>
+        <span style="background-position:-5px -9130px;" data-latex="\mathbb{Q} "></span>
+        <span style="background-position:-5px -8744px;" data-latex="\mathbb{P} "></span>
+        <span style="background-position:-5px -10230px;" data-latex="\mathbb{F} "></span>
+        <span style="background-position:-5px -10262px;" data-latex="\mathcal{L} "></span>
+        <span style="background-position:-5px -10294px;" data-latex="\wp "></span>
+        <span style="background-position:-5px -13034px;" data-latex="\mathcal{Z} "></span>
+      </div>
+      <div class="option-item-box-btn-group">
+        <span style="background-position:-5px -4209px;" data-latex="= "></span>
+        <span style="background-position:-5px -4979px;" data-latex="\equiv "></span>
+        <span style="background-position:-5px -11975px;" data-latex="\sim "></span>
+        <span style="background-position:-5px -80px;" data-latex="\approx "></span>
+        <span style="background-position:-5px -251px;" data-latex="\cong "></span>
+        <span style="background-position:-5px -519px;" data-latex="\simeq "></span>
+        <span style="background-position:-5px -6905px;" data-latex="< "></span>
+        <span style="background-position:-5px -6841px;" data-latex="\leq "></span>
+        <span style="background-position:-5px -6809px;" data-latex="\lneq "></span>
+        <span style="background-position:-5px -6873px;" data-latex="\leqslant "></span>
+        <span style="background-position:-5px -4776px;" data-latex="> "></span>
+        <span style="background-position:-5px -4712px;" data-latex="\geq "></span>
+        <span style="background-position:-5px -4680px;" data-latex="\gneq "></span>
+        <span style="background-position:-5px -4744px;" data-latex="\geqslant "></span>
+        <span style="background-position:-5px -7505px;" data-latex="\gg "></span>
+        <span style="background-position:-5px -7537px;" data-latex="\ll "></span>
+        <span style="background-position:-5px -7943px;" data-latex="\neq "></span>
+        <span style="background-position:-5px -7975px;" data-latex="\not\equiv "></span>
+        <span style="background-position:-5px -8071px;" data-latex="\nsim "></span>
+        <span style="background-position:-5px -7847px;" data-latex="\not\approx "></span>
+        <span style="background-position:-5px -7879px;" data-latex="\not\cong "></span>
+        <span style="background-position:-5px -8991px;" data-latex="\propto "></span>
+        <span style="background-position:-5px -8712px;" data-latex="\prec "></span>
+        <span style="background-position:-5px -11053px;" data-latex="\succ "></span>
+      </div>
+      <div class="option-item-box-btn-group">
+        <span style="background-position:-5px -3621px;" data-latex="\in "></span>
+        <span style="background-position:-5px -7911px;" data-latex="\notin "></span>
+        <span style="background-position:-5px -12447px;" data-latex="\cup "></span>
+        <span style="background-position:-5px -5375px;" data-latex="\cap "></span>
+        <span style="background-position:-5px -10711px;" data-latex="\sqcap "></span>
+        <span style="background-position:-5px -10743px;" data-latex="\sqcup "></span>
+        <span style="background-position:-5px -10989px;" data-latex="\subset "></span>
+        <span style="background-position:-5px -11021px;" data-latex="\subseteq "></span>
+        <span style="background-position:-5px -11386px;" data-latex="\supset "></span>
+        <span style="background-position:-5px -11418px;" data-latex="\supseteq "></span>
+        <span style="background-position:-5px -10818px;" data-latex="\sqsubset "></span>
+        <span style="background-position:-5px -10850px;" data-latex="\sqsubseteq "></span>
+        <span style="background-position:-5px -10882px;" data-latex="\sqsupset "></span>
+        <span style="background-position:-5px -10914px;" data-latex="\sqsupseteq "></span>
+        <span style="background-position:-5px -4455px;" data-latex="\forall "></span>
+        <span style="background-position:-5px -8039px;" data-latex="\neg "></span>
+        <span style="background-position:-5px -2347px;" data-latex="\ni "></span>
+        <span style="background-position:-5px -3194px;" data-latex="\not\ni "></span>
+        <span style="background-position:-5px -7751px;" data-latex="\lhd "></span>
+        <span style="background-position:-5px -2379px;" data-latex="\triangleright "></span>
+        <span style="background-position:-5px -11654px;" data-latex="\exists "></span>
+        <span style="background-position:-5px -11686px;" data-latex="\nexists "></span>
+        <span style="background-position:-5px -7109px;" data-latex="\land "></span>
+        <span style="background-position:-5px -7141px;" data-latex="\lor "></span>
+        <span style="background-position:-5px -626px;" data-latex="\because  "></span>
+        <span style="background-position:-5px -11718px;" data-latex="\therefore "></span>
+      </div>
+      <div class="option-item-box-btn-group">
+        <span style="background-position:-5px -144px;" data-latex="\angle "></span>
+        <span style="background-position:-5px -7345px;" data-latex="\measuredangle "></span>
+        <span style="background-position:-5px -10615px;" data-latex="\sphericalangle "></span>
+        <span style="background-position:-5px -12071px;" data-latex="\triangle "></span>
+        <span style="background-position:-5px -10647px;" data-latex="\square "></span>
+        <span style="background-position:-5px -3012px;" data-latex="\diamond "></span>
+        <span style="background-position:-5px -8242px;" data-latex="\parallel "></span>
+        <span style="background-position:-5px -8007px;" data-latex="\nparallel "></span>
+        <span style="background-position:-5px -8413px;" data-latex="\perp "></span>
+      </div>
+    </div>
+  </div>
+  <div class="option-item">
+    <div class="option-panel">
+      <div class="choose-panel-sign" style="background-position: -5px -9087px;"></div>
+      <div class="option-panel-label">根、分数、脚本</div>
+      <div class="option-panel-arrow-down"></div>
+    </div>
+    <div class="option-btn">
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">分数</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -4519px;" data-latex="\frac{x1}{x2} "></span>
+          <span style="background-position: -5px -10508px;" data-latex="\tfrac{x1}{x2} "></span>
+        </div>
+      </div>
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">根</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -10187px;" data-latex="\sqrt[x1]{x2} "></span>
+          <span style="background-position: -5px -10775px;" data-latex="\sqrt{x1} "></span>
+          <span style="background-position: -5px -2626px;" data-latex="\sqrt[3]{x1} "></span>
+        </div>
+      </div>
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">上标、下标</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -11300px;" data-latex="x1^{x2} "></span>
+          <span style="background-position: -5px -10946px;" data-latex="x1_{x2} "></span>
+          <span style="background-position: -5px -11343px;" data-latex="x1_{x2}^{x3} "></span>
+          <span style="background-position: -5px -6392px;" data-latex="_{x1}x2 "></span>
+          <span style="background-position: -5px -6435px;" data-latex="^{x1}x2 "></span>
+          <span style="background-position: -5px -6478px;" data-latex="_{x1}^{x2}x3 "></span>
+          <span style="background-position: -5px -8199px;" data-latex="\overbrace{x1}^{x2} "></span>
+          <span style="background-position: -5px -12404px;" data-latex="\underbrace{x1}_{x2} "></span>
+          <span style="background-position: -5px -905px;" data-latex="x1_{x2}^{x3} "></span>
+          <span style="background-position: -5px -948px;" data-latex="x1_{x2} "></span>
+        </div>
+      </div>
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">空格</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -7708px;" data-latex="\: "></span>
+          <span style="background-position: -5px -3076px;" data-latex="\; "></span>
+          <span style="background-position: -5px -11814px;" data-latex="\, "></span>
+          <span style="background-position: -5px -551px;" data-latex="\! "></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="option-item">
+    <div class="option-panel">
+      <div class="choose-panel-sign" style="background-position: -5px -5332px;"></div>
+      <div class="option-panel-label">微积分、极限</div>
+      <div class="option-panel-arrow-down"></div>
+    </div>
+    <div class="option-btn">
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">积分</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -5203px;" data-latex="\int "></span>
+          <span style="background-position: -5px -5246px;" data-latex="\int_x1 "></span>
+          <span style="background-position: -5px -5289px;" data-latex="\int_x1x2\;\mathrm{d}x3 "></span>
+          <span style="background-position: -5px -3290px;" data-latex="\iint "></span>
+          <span style="background-position: -5px -12103px;" data-latex="\iiint "></span>
+          <span style="background-position: -5px -2411px;" data-latex="\oint "></span>
+          <!--                <span style="background-position: -5px -11450px;" data-latex="\oint "></span>-->
+          <span style="background-position: -5px -2787px;" data-latex="\int_{x1}^{x2} "></span>
+          <span style="background-position: -5px -2830px;" data-latex="\int_{x1}^{x2}x3\;\mathrm{d}x4 "></span>
+        </div>
+      </div>
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">微分</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -3044px;" data-latex="\mathrm{d} "></span>
+          <span style="background-position: -5px -8381px;" data-latex="\partial "></span>
+          <span style="background-position: -5px -2937px;" data-latex="\frac{\mathrm{d} x1}{\mathrm{d} x2} "></span>
+          <span style="background-position: -5px -4637px;" data-latex="\nabla x1 "></span>
+          <span style="background-position: -5px -8338px;" data-latex="\frac{\partial x1}{\partial x2}"></span>
+        </div>
+      </div>
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">极限</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -6937px;" data-latex="\lim_{x1\rightarrow \infty} "></span>
+          <span style="background-position: -5px -6980px;" data-latex="\lim_{x1} "></span>
+        </div>
+      </div>
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">梯度算子</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -2669px;" data-latex="\nabla \times x1 "></span>
+          <span style="background-position: -5px -3119px;" data-latex="\nabla \cdot x1 "></span>
+          <span style="background-position: -5px -5761px;" data-latex="\Delta x1 "></span>
+        </div>
+      </div>
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">函数</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -10433px;" data-latex="\sin(x1) "></span>
+          <span style="background-position: -5px -2540px;" data-latex="\cos(x1) "></span>
+          <span style="background-position: -5px -11579px;" data-latex="\tan(x1) "></span>
+          <span style="background-position: -5px -10326px;" data-latex="\sec(x1) "></span>
+          <span style="background-position: -5px -2497px;" data-latex="\csc(x1) "></span>
+          <span style="background-position: -5px -2583px;" data-latex="\cot(x1) "></span>
+          <span style="background-position: -5px -283px;" data-latex="\arccos(x1) "></span>
+          <span style="background-position: -5px -326px;" data-latex="\arcsin(x1) "></span>
+          <span style="background-position: -5px -369px;" data-latex="\arctan(x1) "></span>
+          <span style="background-position: -5px -4348px;" data-latex="\exp(x1) "></span>
+          <span style="background-position: -5px -7023px;" data-latex="\log(x1) "></span>
+          <span style="background-position: -5px -7066px;" data-latex="\log_{n}(x1) "></span>
+          <span style="background-position: -5px -7633px;" data-latex="\ln\left ( x1 \right ) "></span>
+          <span style="background-position: -5px -5579px;" data-latex="\sin^{-1}(x) "></span>
+          <span style="background-position: -5px -5450px;" data-latex="\cos^{-1}(x) "></span>
+          <span style="background-position: -5px -5622px;" data-latex="\tan^{-1}(x) "></span>
+          <span style="background-position: -5px -5407px;" data-latex="\csc^{-1}(x) "></span>
+          <span style="background-position: -5px -5493px;" data-latex="\cot^{-1}(x) "></span>
+          <span style="background-position: -5px -5536px;" data-latex="\sec^{-1}(x) "></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="option-item">
+    <div class="option-panel">
+      <div class="choose-panel-sign" style="background-position: -5px -991px;"></div>
+      <div class="option-panel-label">大型运算符</div>
+      <div class="option-panel-arrow-down"></div>
+    </div>
+    <div class="option-btn arrow-btn">
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">求和</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -11085px;" data-latex="\sum "></span>
+          <span style="background-position: -5px -11257px;" data-latex="\sum_{x1} "></span>
+          <span style="background-position: -5px -11214px;" data-latex="\sum_{x1}^{x2} "></span>
+        </div>
+      </div>
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">乘积</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -8776px;" data-latex="\prod "></span>
+          <span style="background-position: -5px -2454px;" data-latex="\coprod "></span>
+          <!--                <span style="background-position: -5px -8776px;" data-latex="\tfrac{x1}{x2} "></span>-->
+          <span style="background-position: -5px -8905px;" data-latex="\prod_{x1}^{x2} "></span>
+          <span style="background-position: -5px -8948px;" data-latex="\prod_{x1} "></span>
+        </div>
+      </div>
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">集合</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -1120px;" data-latex="\bigcup "></span>
+          <span style="background-position: -5px -776px;" data-latex="\bigcap "></span>
+          <span style="background-position: -5px -1077px;" data-latex="\bigsqcup "></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="option-item">
+    <div class="option-panel">
+      <div class="choose-panel-sign" style="background-position: -5px -7173px;"></div>
+      <div class="option-panel-label">矩阵</div>
+      <div class="option-panel-arrow-down"></div>
+    </div>
+    <div class="option-btn arrow-btn">
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">矩阵</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -11536px;" data-latex="\begin{matrix} x_1 & x_2 \\ x_3 & x_4 \end{matrix} "></span>
+          <span style="background-position: -5px -7216px;" data-latex="\begin{pmatrix} x_1 & x_2 \\ x_3 & x_4 \end{pmatrix} "></span>
+          <span style="background-position: -5px -7259px;" data-latex="\begin{bmatrix} x_1 & x_2 \\ x_3 & x_4 \end{bmatrix} "></span>
+          <span style="background-position: -5px -7302px;" data-latex="\begin{vmatrix} x_1 & x_2 \\ x_3 & x_4 \end{vmatrix} "></span>
+        </div>
+      </div>
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">行、列</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -11857px;" data-latex="\begin{matrix} x1 & x2 & x3 \end{matrix} "></span>
+          <span style="background-position: -5px -11900px;" data-latex="\begin{matrix} x1 \\ x2 \\ x3 \end{matrix} "></span>
+          <span style="background-position: -5px -12146px;" data-latex="\begin{pmatrix} x1 & x2 \end{pmatrix} "></span>
+          <span style="background-position: -5px -12189px;" data-latex="\begin{bmatrix} x1 & x2 \end{bmatrix} "></span>
+          <span style="background-position: -5px -12232px;" data-latex="\left\{\begin{matrix} x1 \\ x2 \end{matrix}\right. "></span>
+          <span style="background-position: -5px -12275px;" data-latex="\binom{x1}{x2} "></span>
+          <span style="background-position: -5px -12318px;" data-latex="\begin{bmatrix} x1 \\ x2 \end{bmatrix} "></span>
+          <span style="background-position: -5px -12361px;" data-latex="\left.\begin{matrix} x1 \\ x2 \end{matrix}\right\} "></span>
+        </div>
+      </div>
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">方程式部件</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -37px;" data-latex="\begin{align*} & x1 = x2 \\ & x3 = x4 \end{align*} "></span>
+          <span style="background-position: -5px -8605px;" data-latex="\left\{\begin{matrix} x1 & x2 \\ x3 & x4 \end{matrix}\right. "></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="option-item">
+    <div class="option-panel">
+      <div class="choose-panel-sign" style="background-position: -5px -2744px;"></div>
+      <div class="option-panel-label">装饰</div>
+      <div class="option-panel-arrow-down"></div>
+    </div>
+    <div class="option-btn arrow-btn">
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">矩阵</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -8306px;" data-latex="\left ( x1 \right ) "></span>
+          <span style="background-position: -5px -2712px;" data-latex="\left \{ x1 \right \} "></span>
+          <span style="background-position: -5px -176px;" data-latex="\langle x1 \rangle "></span>
+          <span style="background-position: -5px -10679px;" data-latex="\left [ x1 \right ] "></span>
+          <span style="background-position: -5px -12831px;" data-latex="\left | x1 \right | "></span>
+          <span style="background-position: -5px -5804px;" data-latex="\left \langle x1 \right. "></span>
+          <span style="background-position: -5px -9354px;" data-latex="\left. x1 \right \rangle "></span>
+          <span style="background-position: -5px -6189px;" data-latex="\left ( x1 \right. "></span>
+          <span style="background-position: -5px -9803px;" data-latex="\left. x1 \right ) "></span>
+          <span style="background-position: -5px -6050px;" data-latex="\left \{ x1 \right. "></span>
+          <span style="background-position: -5px -9600px;" data-latex="\left. x1 \right \} "></span>
+          <span style="background-position: -5px -6360px;" data-latex="\left [ x1 \right. "></span>
+          <span style="background-position: -5px -9835px;" data-latex="\left. x1 \right ] "></span>
+          <span style="background-position: -5px -3333px;" data-latex="\left \| x1 \right \| "></span>
+          <span style="background-position: -5px -2027px;" data-latex="\lceil x1 \rceil "></span>
+          <span style="background-position: -5px -4423px;" data-latex="\lfloor x1 \rfloor "></span>
+          <span style="background-position: -5px -208px;" data-latex="\langle x1 \mid x2 \rangle"></span>
+        </div>
+      </div>
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">向量</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -412px;" data-latex="\vec{x1} "></span>
+          <span style="background-position: -5px -12799px;" data-latex="\underset{x1}{\rightharpoonup} "></span>
+          <span style="background-position: -5px -594px;" data-latex="\bar{x1} "></span>
+          <span style="background-position: -5px -2980px;" data-latex="\ddot{x1} "></span>
+          <span style="background-position: -5px -3226px;" data-latex="\dot{x1} "></span>
+          <span style="background-position: -5px -4851px;" data-latex="\hat{x1} "></span>
+          <span style="background-position: -5px -11943px;" data-latex="\widetilde{x1} "></span>
+          <span style="background-position: -5px -12007px;" data-latex="\overbrace{x1} "></span>
+          <span style="background-position: -5px -1163px;" data-latex="\underbrace{x1} "></span>
+          <span style="background-position: -5px -6253px;" data-latex="\overset{\leftrightarrow}{x1} "></span>
+        </div>
+      </div>
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">表示数</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -3878px;" data-latex="\underline{} "></span>
+          <span style="background-position: -5px -4145px;" data-latex="\overline{x1} "></span>
+          <span style="background-position: -5px -4049px;" data-latex="\left | x1 \right. "></span>
+          <span style="background-position: -5px -4081px;" data-latex="\left. x1 \right | "></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="option-item">
+    <div class="option-panel">
+      <div class="choose-panel-sign" style="background-position: -5px -444px;"></div>
+      <div class="option-panel-label">箭头</div>
+      <div class="option-panel-arrow-down"></div>
+    </div>
+    <div class="option-btn arrow-btn">
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">箭头</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -6521px;" data-latex="\leftarrow "></span>
+          <span style="background-position: -5px -10091px;" data-latex="\rightarrow "></span>
+          <span style="background-position: -5px -3461px;" data-latex="\downarrow "></span>
+          <span style="background-position: -5px -12671px;" data-latex="\uparrow "></span>
+          <span style="background-position: -5px -12511px;" data-latex="\updownarrow "></span>
+          <span style="background-position: -5px -12575px;" data-latex="\Updownarrow  "></span>
+          <span style="background-position: -5px -12970px;" data-latex="\wearrow "></span>
+          <span style="background-position: -5px -6585px;" data-latex="\hookleftarrow "></span>
+          <span style="background-position: -5px -9867px;" data-latex="\mapsto "></span>
+          <span style="background-position: -5px -9899px;" data-latex="\hookrightarrow "></span>
+          <span style="background-position: -5px -9963px;" data-latex="\Rightarrow "></span>
+          <span style="background-position: -5px -6649px;" data-latex="\Leftarrow "></span>
+          <span style="background-position: -5px -6221px;" data-latex="\leftrightarrow "></span>
+          <span style="background-position: -5px -6328px;" data-latex="\Leftrightarrow "></span>
+          <span style="background-position: -5px -12703px;" data-latex="\uparrow\!\downarrow "></span>
+          <span style="background-position: -5px -3525px;" data-latex="\Downarrow "></span>
+          <span style="background-position: -5px -12735px;" data-latex="\Uparrow "></span>
+          <span style="background-position: -5px -10551px;" data-latex="\searrow "></span>
+          <span style="background-position: -5px -10583px;" data-latex="\swarrow "></span>
+          <span style="background-position: -5px -7783px;" data-latex="\nearrow "></span>
+          <span style="background-position: -5px -7815px;" data-latex="\nwarrow "></span>
+          <span style="background-position: -5px -6681px;" data-latex="\leftharpoondown "></span>
+          <span style="background-position: -5px -6713px;" data-latex="\leftharpoonup "></span>
+          <span style="background-position: -5px -6777px;" data-latex="\leftrightharpoons "></span>
+          <span style="background-position: -5px -9995px;" data-latex="\rightharpoondown "></span>
+          <span style="background-position: -5px -10059px;" data-latex="\rightleftharpoons "></span>
+          <span style="background-position: -5px -10123px;" data-latex="\rightharpoonup "></span>
+        </div>
+      </div>
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">音符</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -4883px;" data-latex="\cdots "></span>
+          <span style="background-position: -5px -12863px;" data-latex="\vdots "></span>
+          <span style="background-position: -5px -3397px;" data-latex="\ddots "></span>
+        </div>
+      </div>
+      <div class="option-btn-item">
+        <div class="option-btn-item-label">特定符号</div>
+        <div class="option-btn-item-group">
+          <span style="background-position: -5px -5943px;" data-latex="\overset{x1}{\leftarrow} "></span>
+          <span style="background-position: -5px -6018px;" data-latex="\underset{x1}{\leftarrow} "></span>
+          <span style="background-position: -5px -9739px;" data-latex="\overset{x1}{\leftrightarrow} "></span>
+          <span style="background-position: -5px -9771px;" data-latex="\underset{x1}{\leftrightarrow} "></span>
+          <span style="background-position: -5px -9493px;" data-latex="\overset{x1}{\rightarrow} "></span>
+          <span style="background-position: -5px -9525px;" data-latex="\underset{x1}{\rightarrow} "></span>
+          <span style="background-position: -5px -9632px;" data-latex="\overset{x1}{\rightleftharpoons} "></span>
+          <span style="background-position: -5px -9707px;" data-latex="\underset{x1}{\rightleftharpoons} "></span>
+          <span style="background-position: -5px -6082px;" data-latex="\overset{x1}{\leftrightharpoons} "></span>
+          <span style="background-position: -5px -6157px;" data-latex="\underset{x1}{\leftrightharpoons} "></span>
+          <span style="background-position: -5px -5975px;" data-latex="\xleftarrow[x1]{x2} "></span>
+          <span style="background-position: -5px -6285px;" data-latex="\overset{x1}{\underset{x2}{\leftrightarrow}} "></span>
+          <span style="background-position: -5px -9557px;" data-latex="\xrightarrow[x1]{x2} "></span>
+          <span style="background-position: -5px -9664px;" data-latex="\overset{x1}{\underset{x2}{\rightleftharpoons}} "></span>
+          <span style="background-position: -5px -6114px;" data-latex="\overset{x1}{\underset{x2}{\leftrightharpoons}} "></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div style="border: 1px solid #ccc;padding: 10px;">
+  <textarea rows="10" style="width: 100%;border: 0;outline: 0;" id="mathjax-text"></textarea>
+</div>
+<div style="height: 250px; width: 100%;margin-top: 20px;">
+  <span id="mathjax-result" class="math-tex" contenteditable="false" style="cursor: pointer;"></span>
+</div>
+</body>
+</html>
