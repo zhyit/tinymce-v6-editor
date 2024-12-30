@@ -19,7 +19,7 @@
                         value: item.text,
                         active: lhv === item.text,
                         onAction: () => {
-                            let skin_css = document.querySelector(`head > #${skin_css_id}`)
+                            let skin_css = document.querySelector(`head > link[id=${skin_css_id}]`)
                             if (skin_css) {
                                 skin_css.href = item.href
                             } else {
