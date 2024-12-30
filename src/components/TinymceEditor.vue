@@ -74,7 +74,7 @@ const init = reactive({
   // ui_mode: 'split',
   // skin_url: '/tinymce/skins/ui/oxide',
   skin: 'oxide',
-  content_css: '/tinymce/skins/content/default/content.min.css',
+  content_css: '/tinymce/skins/content/default/content.min.css', ///tinymce/skins/content/document/content.min.css
   height: props.height,  // 如果使用了 autoresize 插件, height设置失效
   promotion: false, //隐藏右上角upgrade按钮
   branding: false, //隐藏右下角由TINY驱动
@@ -92,7 +92,8 @@ const init = reactive({
   toolbar: "undo redo | accordion accordionremove | blocks fontfamily fontsize | bold italic underline strikethrough " +
       "| align numlist bullist | link image | table media | lineheight outdent indent| forecolor backcolor removeformat " +
       "| charmap emoticons | code fullscreen preview | save print | pagebreak anchor codesample | ltr rtl " +
-      "| restoredraft insertdatetime searchreplace wordcount | subscript superscript | blockquote | formatpainter mathjax letterSpacing textIndent | changeSkin",
+      "| restoredraft insertdatetime searchreplace wordcount | subscript superscript | blockquote " +
+      "| formatpainter mathjax letterSpacing textIndent changeSkin",
   plugins: 'accordion advlist anchor charmap code codesample directionality emoticons fullscreen image ' +
       'insertdatetime link lists media pagebreak preview quickbars save searchreplace table wordcount',
   image_advtab: true,
