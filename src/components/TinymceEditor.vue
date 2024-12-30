@@ -59,12 +59,6 @@ const setup = (editor) => {
 }
 const init_instance_callback = (editor) => {
 }
-const handle_paste_preprocess = (editor, args) => {
-  const tem = document.createElement('div')
-  tem.innerHTML = args.content.replace(/<v:[\s\S]*?>[\s\S]*?<\/v:[\s\S]*?>/gi, '')
-      .replace( /<!--\[if\s[\s\S]*?]>[\s\S]*?<!\[endif]-->/gi, '');
-  args.content = tem.innerHTML
-}
 
 const init = reactive({
   selector: `#${props.id}`,
@@ -129,7 +123,15 @@ const init = reactive({
       "Times New Roman=times new roman,times;Trebuchet MS=trebuchet ms,geneva;" +
       "Verdana=verdana,geneva;Webdings=webdings;Wingdings=wingdings",
   // images_upload_handler: example_image_upload_handler,
-  paste_preprocess: handle_paste_preprocess,
+  paste_preprocess: (plugin, args) => {
+    const tem = document.createElement('div')
+    tem.innerHTML = args.content
+        .replace(/<v:[\s\S]*?>[\s\S]*?<\/v:[\s\S]*?>/gi, '')
+        .replace( /<!--\[if\s[\s\S]*?]>[\s\S]*?<!\[endif]-->/gi, '')
+        .replace( /<!--StartFragment-->/gi, '')
+        .replace( /<!--EndFragment-->/gi, '');
+    args.content = tem.innerHTML
+  },
   line_height_formats: '1 1.1 1.2 1.3 1.4 1.5 2 2.5 3'
 })
 
