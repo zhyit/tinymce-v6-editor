@@ -1,5 +1,5 @@
 <script setup>
-import {onMounted, reactive, ref} from "vue";
+import {onMounted, reactive} from "vue";
 import tinymce from 'tinymce/tinymce'
 import 'tinymce/themes/silver/theme'  // 主题文件
 import 'tinymce/models/dom'
@@ -55,7 +55,13 @@ const example_image_upload_handler = (blobInfo, progress) => new Promise(async (
   // }
 })
 const setup = (editor) => {
-
+  // 插入媒体后，出现两个媒体的解决办法
+  editor.on('ObjectSelected', (e) => {
+    let objectType = e.target.getAttribute('data-mce-object');
+    if (objectType === 'audio' || objectType === 'video' || objectType === 'script') {
+      e.preventDefault();
+    }
+  });
 }
 const init_instance_callback = (editor) => {
 }
@@ -76,22 +82,24 @@ const init = reactive({
   elementpath: false, //隐藏底栏的元素路径（隐藏右下角元素显示）
   // resize: true, // 禁用拖拽调整大小
   toolbar_mode: 'wrap', //'floating''sliding''scrolling''wrap'  https://www.tiny.cloud/docs/tinymce/6/toolbar-configuration-options/
-  // contextmenu: false, // false  table image link
-  quickbars_insert_toolbar: false, // 使用了 quickbars 的情况下，contextmenu 失效，要使用 quickbars_insert_toolbar
-  // contextmenu_never_use_native: false, //为true 右键菜单不出现
+  contextmenu: 'chart-data-edit', //右键自定义菜单   false  table image link
+  // quickbars_selection_toolbar: false,
+  quickbars_insert_toolbar: false, // 为false 取消在编辑器中显示快速工具栏
+  // contextmenu_never_use_native: false, //为true 右键时浏览器的自带菜单不出现
   // table_resize_bars: false, // 隐藏表格调整大小的手柄
   // table_resizing: false, // 禁止表格调整大小
-  object_resizing: true, //img,//是否允许调整图像大小.
+  object_resizing: true, //此选项允许您打开/关闭图像、表格或媒体对象的大小调整手柄。默认情况下，此选项处于启用状态，允许您调整表格和图像的大小。您还可以指定一个CSS3选择器来启用调整大小。
   // font_size_input_default_unit: 'pt', //fontsizeinput fontsize
   toolbar: "undo redo | accordion accordionremove | blocks fontfamily fontsize | bold italic underline strikethrough " +
       "| align numlist bullist | link image | table media | lineheight outdent indent| forecolor backcolor removeformat " +
       "| charmap emoticons | code fullscreen preview | save print | pagebreak anchor codesample | ltr rtl " +
       "| restoredraft insertdatetime searchreplace wordcount | subscript superscript | blockquote " +
-      "| formatpainter mathjax letterSpacing textIndent changeSkin",
+      "| formatpainter mathjax letterSpacing textIndent changeSkin chart",
   plugins: 'accordion advlist anchor charmap code codesample directionality emoticons fullscreen image ' +
       'insertdatetime link lists media pagebreak preview quickbars save searchreplace table wordcount',
-  image_advtab: true,
-  image_caption: true,
+  image_title: true,
+  image_advtab: true,//此选项在图像对话框中添加了一个“高级”选项卡，允许您为图像添加自定义样式、间距和边框
+  image_caption: true,//此选项允许用户为图像启用字幕。启用此选项后，图像对话框将有一个名为“标题”的额外复选框。当用户选中复选框时，图像将被包裹在一个HTML5图形元素中，其中包含一个图片标题。然后，用户将能够在编辑器中键入标题内容
   valid_elements: '*[*]', // 允许所有标签和属性
   // paste_webkit_styles: 'none', //此选项允许您指定粘贴到 WebKit 中时要保留的样式 'none' 或者 'all'
   advlist_bullet_styles: 'default,circle,disc,square',
@@ -110,6 +118,7 @@ const init = reactive({
     letterSpacing: '/tinymce/plugins/letterSpacing/plugin.js',
     textIndent: '/tinymce/plugins/textIndent/plugin.js',
     changeSkin: '/tinymce/plugins/changeSkin/plugin.js',
+    chart: '/tinymce/plugins/chart/plugin.js',
   },
   font_size_formats: '初号=44pt 小初=36pt 一号=26pt 小一=24pt 二号=22pt 小三=18pt 三号=16pt 小四=14pt 四号=12pt 五号=10.5pt 小五=9pt 六号=7.5pt 小六=6.5pt 七号=5.5pt 八号=5pt ' +
       '12pt 13pt 14pt 15pt 16pt 17pt 18pt 19pt 20pt 21pt 22pt 23pt 24pt 25pt 26pt 27pt 28pt 29pt 30pt 31pt 32pt 33pt 34pt 35pt 36pt 48pt 72pt',
@@ -130,9 +139,47 @@ const init = reactive({
         .replace( /<!--\[if\s[\s\S]*?]>[\s\S]*?<!\[endif]-->/gi, '')
         .replace( /<!--StartFragment-->/gi, '')
         .replace( /<!--EndFragment-->/gi, '');
-    args.content = tem.innerHTML
+    args.content = tem.innerHTML;
+    tem.remove();
   },
-  line_height_formats: '1 1.1 1.2 1.3 1.4 1.5 2 2.5 3'
+  line_height_formats: '1 1.1 1.2 1.3 1.4 1.5 2 2.5 3',
+  file_picker_types: 'file image media',//https://www.tiny.cloud/docs/tinymce/6/media/
+  file_picker_callback: (callback, value, meta) => { //在image组件介绍中,如果在这里配置自定义上传方法，images_upload_handler可不配置
+    let accept = '';
+    switch(meta.filetype){
+      case 'image':
+        accept='.jpg, .jpeg, .png, .gif';
+        break;
+      case 'media':
+        accept='.mp3, .mp4';
+        break;
+      case 'file':
+      default:
+    }
+    let input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', accept);
+    input.onchange = () => {
+      let file = input.files[0];
+      let reader = new FileReader();
+      reader.onload = () => {
+        // Note: Now we need to register the blob in TinyMCEs image blob
+        // registry. In the next release this part hopefully won't be
+        // necessary, as we are looking to handle it internally.
+        let id = 'blobid' + (new Date()).getTime();
+        let blobCache = tinymce.activeEditor.editorUpload.blobCache;
+        let base64 = reader.result.split(',')[1];
+        let blobInfo = blobCache.create(id, file, base64);
+        blobCache.add(blobInfo);
+
+        // call the callback and populate the Title field with the file name
+        callback(blobInfo.blobUri(), { title: file.name });
+        input.value = '';
+      };
+      reader.readAsDataURL(file);
+    }
+    input.click();
+  }
 })
 
 onMounted(() => {

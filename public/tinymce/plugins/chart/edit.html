@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>编辑数据</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .main-el {
+            overflow: auto;
+            height: 500px;
+            padding: 10px;
+        }
+        table {
+            border-collapse: collapse;
+            table-layout: fixed
+        }
+        tr td {
+            border: 1px solid #1c6ca1;
+            padding: 8px;
+        }
+        td > input {
+            height: 25px;
+            border: none;
+            outline: none;
+        }
+    </style>
+    <script>
+        //获取url地址栏传参
+        function getQueryVariable(variable) {
+            let query = window.location.search.substring(1);
+            let vars = query.split("&");
+            for (let i = 0; i < vars.length; i++) {
+                let pair = vars[i].split("=");
+                if (pair[0] === variable) {
+                    return decodeURIComponent(pair[1]);
+                }
+            }
+        }
+
+        window.onload = () => {
+            const tableEl = document.querySelector('.main-el>table');
+
+            const iframe_id = getQueryVariable('iframe_id')
+            const node_class = getQueryVariable('node_class');
+            const iframe = window.parent.document.querySelector(`#${iframe_id}`);
+            const node = iframe.contentWindow.document.querySelector(`.${node_class}`);
+            const node_list = node.getAttribute('data-list');
+            const list = node_list ? JSON.parse(node_list) : [
+                ['', '系列 1', '系列 2', '系列 3'],
+                ['类别 1', '4.3', '2.4', '2'],
+                ['类别 2', '2.5', '4.4', '2'],
+                ['类别 3', '3.5', '1.8', '3'],
+                ['类别 4', '4.5', '2.8', '5'],
+            ]
+
+            const proxyData = new Proxy(list, {
+                set(target, key, value) {
+                    target[key] = value;
+                    updateTable();
+                    return true;
+                }
+            });
+
+            // 更新表格内容
+            function updateTable() {
+                tableEl.innerHTML = ''; // 清空之前的表格
+                proxyData.forEach((item, rowIdx) => {
+                    const rowEl = document.createElement('tr');
+                    tableEl.appendChild(rowEl);
+                    item.forEach((child, cellIdx) => {
+                        const cellEl = document.createElement('td');
+                        rowEl.appendChild(cellEl);
+                        const cellInputEL = document.createElement('input');
+                        cellInputEL.classList.add('cell-input-el');
+                        cellInputEL.value = child;
+                        cellInputEL.type = 'text';
+                        cellEl.appendChild(cellInputEL);
+                        cellInputEL.addEventListener('input', (e) => {
+                            proxyData[rowIdx][cellIdx] = e.target.value;
+                        })
+                    })
+                })
+            }
+
+            updateTable();
+
+            window.addEventListener('message', (e) => {
+                const data = e.data;
+                if (data) {
+                    switch (data) {
+                        case 'push_row':
+                            let row = [...list[0]];
+                            for (let i = 0; i < row.length; i++) {
+                                if (i === 0) {
+                                    row[0] = '类别 ' + list.length;
+                                } else {
+                                    row[i] = 0;
+                                }
+                            }
+                            list.push(row);
+                            updateTable();
+                            break;
+                        case 'del_row':
+                            if (list.length <= 1) {
+                                alert('请保留一行');
+                                return;
+                            }
+                            list.splice(list.length - 1, 1);
+                            updateTable();
+                            break;
+                        case 'push_col':
+                            for (let i = 0; i < list.length; i++) {
+                                if (i === 0) {
+                                    list[0].push('系列 ' + list[0].length);
+                                } else {
+                                    list[i].push('0');
+                                }
+                            }
+                            updateTable();
+                            break;
+                        case 'del_col':
+                            let col = [...list[0]];
+                            if (col.length <= 2) {
+                                alert('请保留两行');
+                                return;
+                            }
+                            list.forEach(item => {
+                                item.splice(item.length - 1, 1);
+                            })
+                            updateTable();
+                            break;
+                        default:
+                            window.parent.postMessage({
+                                mceAction: 'customAction',
+                                content: JSON.stringify(list)
+                            }, '*');
+                            window.parent.postMessage({
+                                mceAction: 'close'
+                            }, '*');
+                    }
+                }
+            })
+        }
+    </script>
+</head>
+<body>
+<div class="main-el">
+    <table></table>
+</div>
+</body>
+</html>

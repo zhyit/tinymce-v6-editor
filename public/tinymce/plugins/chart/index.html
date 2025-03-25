@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>图表</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .main-item {
+            width: 770px;
+            height: 500px;
+            padding: 5px;
+            background-color: #f1f1f1;
+        }
+        .content-item {
+            display: flex;
+            background-color: white;
+            height: 100%;
+            position: relative;
+        }
+        .left-item {
+            text-align: center;
+            width: 120px;
+            padding: 10px;
+            border-right: 1px solid #cccccc;
+        }
+        .right-item {
+            flex: 1;
+            padding: 10px;
+        }
+        .small-img-content {
+            height: 80px;
+            border-bottom: 1px solid #cccccc;
+        }
+        .mode-item-active {
+            background-color: #87c7f3;
+        }
+        .mode-item {
+            font-size: 12px;
+            padding: 5px;
+        }
+        .mode-item:hover {
+            background-color: #87c7f3;
+            cursor: pointer;
+        }
+        .small-img-content {
+            display: flex;
+        }
+        .small-img-item {
+            width: 55px;
+            height: 55px;
+            padding: 10px;
+            text-align: center;
+            border: 1px dashed transparent;
+        }
+        .small-img-active {
+            background-color: #bddcf6;
+            border-color: black;
+        }
+        .small-img-item:hover {
+            background-color: #bddcf6;
+            cursor: pointer;
+        }
+        .small-img-item img {
+            mix-blend-mode: multiply;//混合模式
+        }
+    </style>
+    <script>
+        window.onload = () => {
+            const active_class = 'mode-item-active';
+            /*
+            * 1：
+            * */
+            const data = [
+                {
+                    type: 'bar',
+                    name: '柱状图',
+                    list: [
+                        {
+                            mode: 1,
+                            name: '簇状柱状图',
+                            small_src: '/tinymce/plugins/chart/imgs/bar/cz_small.png',
+                            big_src: '/tinymce/plugins/chart/imgs/bar/cz_big.png'
+                        },
+                        {
+                            mode: 2,
+                            name: '堆积柱状图',
+                            small_src: '/tinymce/plugins/chart/imgs/bar/dj_small.png',
+                            big_src: '/tinymce/plugins/chart/imgs/bar/dj_big.png'
+                        },
+                        {
+                            mode: 3,
+                            name: '百分比堆积柱状图',
+                            small_src: '/tinymce/plugins/chart/imgs/bar/bfbdj_small.png',
+                            big_src: '/tinymce/plugins/chart/imgs/bar/bfbdj_big.png'
+                        },
+                        /*{
+                            mode: 4,
+                            name: '三维簇状柱状图',
+                            small_src: '/tinymce/plugins/chart/imgs/bar/swcz_small.png',
+                            big_src: '/tinymce/plugins/chart/imgs/bar/swcz_big.png'
+                        },
+                        {
+                            mode: 5,
+                            name: '三维堆积柱状图',
+                            small_src: '/tinymce/plugins/chart/imgs/bar/swdj_small.png',
+                            big_src: '/tinymce/plugins/chart/imgs/bar/swdj_big.png'
+                        },
+                        {
+                            mode: 6,
+                            name: '三维百分比堆积柱状图',
+                            small_src: '/tinymce/plugins/chart/imgs/bar/swbfbdj_small.png',
+                            big_src: '/tinymce/plugins/chart/imgs/bar/swbfbdj_big.png'
+                        },
+                        {
+                            mode: 7,
+                            name: '三维柱状图',
+                            small_src: '/tinymce/plugins/chart/imgs/bar/sw_small.png',
+                            big_src: '/tinymce/plugins/chart/imgs/bar/sw_big.png'
+                        },*/
+                    ]
+                },
+                {
+                    type: 'line',
+                    name: '折线图',
+                    list: [
+                        {
+                            name: '折线图',
+                            small_src: '/tinymce/plugins/chart/imgs/line/zxt_small.png',
+                            big_src: '/tinymce/plugins/chart/imgs/line/zxt_big.png'
+                        },
+                    ]
+                }
+            ]
+
+            const contentItem = document.querySelector('.content-item');
+            const leftItem = document.querySelector('.left-item');
+            const smallImgContent = document.querySelector('.small-img-content');
+            const imgDetail = document.querySelector('.img-detail');
+
+            // 定义代理数据
+            const state = {
+                activeIndex: -1, // 当前激活的索引
+                imgActiveIndex: -1
+            };
+
+            // 代理数据对象
+            const proxyData = new Proxy(state, {
+                set(target, key, value) {
+                    if (key === 'activeIndex') {
+                        const modeItems = document.querySelectorAll('.mode-item');
+                        modeItems.forEach(item => item.classList.remove(active_class));
+                        modeItems[value].classList.add(active_class);
+
+                        let list = data[value].list
+                        if (list) {
+                            list.forEach((item, idx) => {
+                                const imgDivEl = document.createElement('div');
+                                imgDivEl.classList.add('small-img-item');
+                                smallImgContent.append(imgDivEl);
+                                const imgEl = document.createElement('img');
+                                imgEl.alt = '';
+                                imgEl.src = item.small_src;
+                                imgDivEl.append(imgEl);
+                                imgDivEl.addEventListener('click', () => {
+                                    document.querySelectorAll('.small-img-item').forEach(img_item => img_item.classList.remove('small-img-active'));
+                                    imgDivEl.classList.add('small-img-active');
+                                    proxyData.imgActiveIndex = idx;
+                                    imgDetail.innerHTML = '';
+                                    const nameEl = document.createElement('div');
+                                    nameEl.textContent = item.name;
+                                    nameEl.style = 'font-weight: bold;margin: 10px 0;'
+                                    imgDetail.append(nameEl)
+                                    const bigImgEl = document.createElement('img');
+                                    bigImgEl.alt = '';
+                                    bigImgEl.src = item.big_src;
+                                    bigImgEl.style = 'width: 220px;height: 150px;border: 5px solid #bddcf6;'
+                                    imgDetail.append(bigImgEl);
+                                    bigImgEl.addEventListener('mouseover', () => {
+                                        const bigImg_amplify = document.createElement('img');
+                                        bigImg_amplify.alt = '';
+                                        bigImg_amplify.src = bigImgEl.src;
+                                        bigImg_amplify.style = `width: 500px;position: absolute;top:102px;`;
+                                        contentItem.append(bigImg_amplify);
+                                        bigImg_amplify.addEventListener('mouseout', () => {
+                                            bigImg_amplify.remove();
+                                        })
+                                    })
+                                })
+                            })
+                        }
+                    }
+                    target[key] = value;
+                    return true;
+                }
+            });
+
+            data.forEach((item, index) => {
+                // 创建mode项
+                const modeItem = document.createElement('div');
+                modeItem.classList.add('mode-item');
+                modeItem.textContent = item.name;
+                modeItem.setAttribute('data-type', item.type);
+
+                leftItem.append(modeItem);
+
+                modeItem.addEventListener('click', () => {
+                    smallImgContent.innerHTML = '';
+                    imgDetail.innerHTML = '';
+                    proxyData.activeIndex = index;
+                    proxyData.imgActiveIndex = -1;
+                })
+            })
+
+            window.addEventListener('message',  (event) => {
+                if (proxyData.activeIndex !== -1 && proxyData.imgActiveIndex !== -1) {
+                    const divEl = document.createElement('div');
+                    const chartObj = data[proxyData.activeIndex];
+                    divEl.classList.add('tinymce-chart-item-' + new Date().getTime())
+                    divEl.style = `width:80%;height: calc(80vw * 2 / 3);margin: 0 auto;`
+                    divEl.setAttribute('contenteditable', false);
+                    divEl.setAttribute('data-type', chartObj.type);
+                    divEl.setAttribute('data-name', chartObj.list[proxyData.imgActiveIndex].name);
+                    divEl.setAttribute('data-mode', chartObj.list[proxyData.imgActiveIndex].mode);
+
+                    window.parent.postMessage({
+                        mceAction: 'customAction',
+                        content: divEl.outerHTML
+                    }, '*');
+                    window.parent.postMessage({
+                        mceAction: 'close'
+                    }, '*');
+                }
+            })
+        }
+    </script>
+</head>
+<body>
+<div class="main-item">
+    <div class="content-item">
+        <div class="left-item"></div>
+        <div class="right-item">
+            <div class="small-img-content"></div>
+            <div class="img-detail"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
