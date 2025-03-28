@@ -12,4 +12,4 @@
 | textIndex        | 首行缩进                |                                                                                                                                             |
 | letterSpacing    | 字体间距                |                                                                                                                                             |
 | changeSkin       | 更换编辑器皮肤             | 因为这是用js获取了引入的<link>的ID去更换href,这边测试ID是在没有冲突的情况下进行,如果有,请配置skin_id,如果需要更过的皮肤样式,请配置skin_list([{text:'xxx', href: 'xxx', content_href: 'xxxx'}]) |
-| chart            | 图表                  | echarts生成的图表（目前只支持柱状图、折线图）   ，可编辑数据，可生成3D                                                                                                                    |
+| chart            | 图表                  | echarts生成的图表（目前只支持柱状图、折线图）   ，可编辑数据，可生成3D(echarts-gl)                                                                                                 |
