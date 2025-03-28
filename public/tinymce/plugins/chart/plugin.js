@@ -82,10 +82,8 @@
                     series.push(series_item);
                 }
             }
-            console.log(series);
-            // return
 
-            /*return {
+            return {
                 title: {
                     text: title
                 },
@@ -105,7 +103,7 @@
                     max
                 },
                 series
-            };*/
+            };
         }
 
         if (list.length > 0) {
@@ -277,16 +275,21 @@
                 echartsScript.type = 'text/javascript';
                 echartsScript.src = echarts_js_url;
                 document.head.append(echartsScript);
+
+                // 3D 引入echarts扩展 echarts-gl.js
+                let echartsGlScript = document.head.querySelector(`script[id='echarts-gl-script']`);
+                if (!echartsGlScript) {
+                    echartsGlScript = document.createElement('script');
+                    echartsGlScript.id = 'echarts-gl-script';
+                    echartsGlScript.type = 'text/javascript';
+                    echartsGlScript.src = echarts_gl_js_url;
+                    // 确保第一个脚本加载完成后再添加第二个脚本
+                    echartsScript.onload = ()=>  {
+                        document.head.appendChild(echartsGlScript);
+                    };
+                }
             }
-            // 3D 引入echarts扩展 echarts-gl.js
-            /*let echartsGlScript = document.head.querySelector(`script[id='echarts-gl-script']`);
-            if (!echartsGlScript) {
-                echartsGlScript = document.createElement('script');
-                echartsGlScript.id = 'echarts-gl-script';
-                echartsGlScript.type = 'text/javascript';
-                echartsGlScript.src = echarts_gl_js_url;
-                document.head.append(echartsGlScript);
-            }*/
+
         })
         editor.on('GetContent', (e) => {
             const tempEl = editor.dom.create('div');
