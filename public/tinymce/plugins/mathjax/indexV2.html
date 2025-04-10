@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>公式</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #e3e2e2;
+        }
+        .symbol-main {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: #e3e2e2;
+        }
+        .symbol-basic {
+            padding: 10px 5px;
+            display: flex;
+            align-items: center;
+        }
+        .symbol-basic-choice {
+            padding: 3px;
+            border: 1px solid white;
+            border-radius: 5px;
+        }
+    </style>
+    <script data-id="math-jax-config-script" async src="mathjax-config.js"></script>
+    <script type="text/javascript">
+        window.onload = () => {
+            for (let i = 0; i < LATEX_BASIC.length; i++) {
+                console.log(LATEX_BASIC[i]);
+            }
+        }
+    </script>
+    <script data-id="mathjax-script" async src="es5/tex-mml-svg.js"></script>
+</head>
+<body>
+    <div class="symbol-main">
+        <div class="symbol-basic">
+            <div class="symbol-basic-choice">
+
+            </div>
+            <div class="symbol-show-other-btn">⊽</div>
+        </div>
+        <div class="symbol-advanced"></div>
+    </div>
+</body>
+</html>

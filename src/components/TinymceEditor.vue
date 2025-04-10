@@ -65,6 +65,42 @@ const setup = (editor) => {
 }
 const init_instance_callback = (editor) => {
 }
+const file_picker_handler = (callback, value, meta) => {
+  let accept = '';
+  switch(meta.filetype){
+    case 'image':
+      accept='.jpg, .jpeg, .png, .gif';
+      break;
+    case 'media':
+      accept='.mp3, .mp4';
+      break;
+    case 'file':
+    default:
+  }
+  let input = document.createElement('input');
+  input.setAttribute('type', 'file');
+  input.setAttribute('accept', accept);
+  input.onchange = () => {
+    let file = input.files[0];
+    let reader = new FileReader();
+    reader.onload = () => {
+      // Note: Now we need to register the blob in TinyMCEs image blob
+      // registry. In the next release this part hopefully won't be
+      // necessary, as we are looking to handle it internally.
+      let id = 'blobid' + (new Date()).getTime();
+      let blobCache = tinymce.activeEditor.editorUpload.blobCache;
+      let base64 = reader.result.split(',')[1];
+      let blobInfo = blobCache.create(id, file, base64);
+      blobCache.add(blobInfo);
+
+      // call the callback and populate the Title field with the file name
+      callback(blobInfo.blobUri(), { title: file.name });
+      input.value = '';
+    };
+    reader.readAsDataURL(file);
+  }
+  input.click();
+}
 
 const init = reactive({
   selector: `#${props.id}`,
@@ -144,42 +180,7 @@ const init = reactive({
   },
   line_height_formats: '1 1.1 1.2 1.3 1.4 1.5 2 2.5 3',
   file_picker_types: 'file image media',//https://www.tiny.cloud/docs/tinymce/6/media/
-  file_picker_callback: (callback, value, meta) => { //在image组件介绍中,如果在这里配置自定义上传方法，images_upload_handler可不配置
-    let accept = '';
-    switch(meta.filetype){
-      case 'image':
-        accept='.jpg, .jpeg, .png, .gif';
-        break;
-      case 'media':
-        accept='.mp3, .mp4';
-        break;
-      case 'file':
-      default:
-    }
-    let input = document.createElement('input');
-    input.setAttribute('type', 'file');
-    input.setAttribute('accept', accept);
-    input.onchange = () => {
-      let file = input.files[0];
-      let reader = new FileReader();
-      reader.onload = () => {
-        // Note: Now we need to register the blob in TinyMCEs image blob
-        // registry. In the next release this part hopefully won't be
-        // necessary, as we are looking to handle it internally.
-        let id = 'blobid' + (new Date()).getTime();
-        let blobCache = tinymce.activeEditor.editorUpload.blobCache;
-        let base64 = reader.result.split(',')[1];
-        let blobInfo = blobCache.create(id, file, base64);
-        blobCache.add(blobInfo);
-
-        // call the callback and populate the Title field with the file name
-        callback(blobInfo.blobUri(), { title: file.name });
-        input.value = '';
-      };
-      reader.readAsDataURL(file);
-    }
-    input.click();
-  }
+  file_picker_callback: file_picker_handler
 })
 
 onMounted(() => {
