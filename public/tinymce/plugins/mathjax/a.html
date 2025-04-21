@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathJax 符号面板</title>
+<!--    <script id="MathJax-script-config" async src="mathjax-config.js"></script>-->
+    <script id="MathJax-script" async src="es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .symbol-panel {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .preview-area {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .tab-btn {
+            padding: 10px 15px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #555;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            color: #3498db;
+            border-bottom-color: #3498db;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .symbol-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+        .symbol-btn {
+            padding: 12px 5px;
+            text-align: center;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            height: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .symbol-btn:hover {
+            background-color: #e9ecef;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .symbol-render {
+            font-size: 20px;
+            margin-bottom: 5px;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .symbol-code {
+            font-family: 'Consolas', monospace;
+            font-size: 12px;
+            color: #666;
+            word-break: break-all;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            font-size: 16px;
+            resize: vertical;
+        }
+        .preview {
+            min-height: 100px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .category-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 20px 0 10px;
+            color: #2c3e50;
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .symbol-grid {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+<h1>MathJax 数学符号面板</h1>
+
+<div class="container">
+    <div class="symbol-panel">
+        <h2>符号面板</h2>
+
+        <div class="tab-buttons">
+            <button class="tab-btn active" data-tab="basic">基础符号</button>
+            <button class="tab-btn" data-tab="greek">希腊字母</button>
+            <button class="tab-btn" data-tab="operators">运算符</button>
+        </div>
+
+        <div class="tab-content active" id="basic-tab">
+            <div class="category-title">基础数学符号</div>
+            <div class="symbol-grid" id="basic-symbols"></div>
+
+            <div class="category-title">关系运算符</div>
+            <div class="symbol-grid" id="relation-symbols"></div>
+
+            <div class="category-title">箭头符号</div>
+            <div class="symbol-grid" id="arrow-symbols"></div>
+        </div>
+
+        <div class="tab-content" id="greek-tab">
+            <div class="category-title">小写希腊字母</div>
+            <div class="symbol-grid" id="greek-lowercase"></div>
+
+            <div class="category-title">大写希腊字母</div>
+            <div class="symbol-grid" id="greek-uppercase"></div>
+        </div>
+
+        <div class="tab-content" id="operators-tab">
+            <div class="category-title">二元运算符</div>
+            <div class="symbol-grid" id="binary-operators"></div>
+
+            <div class="category-title">N元运算符</div>
+            <div class="symbol-grid" id="n-operators"></div>
+
+            <div class="category-title">高级运算符</div>
+            <div class="symbol-grid" id="high-operators"></div>
+        </div>
+    </div>
+
+    <div class="preview-area">
+        <h2>公式编辑器</h2>
+        <textarea id="formulaInput" placeholder="在此输入LaTeX公式，或点击下方符号插入..."></textarea>
+
+        <div class="controls">
+            <button id="previewBtn">预览公式</button>
+            <button id="clearBtn">清空编辑器</button>
+            <button id="addInlineBtn">插入行内公式</button>
+            <button id="addDisplayBtn">插入显示公式</button>
+        </div>
+
+        <h3>预览效果</h3>
+        <div class="preview" id="formulaPreview"></div>
+    </div>
+</div>
+
+<script>
+    // 等待MathJax加载完成
+    function whenMathJaxReady(callback) {
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            callback();
+        } else {
+            document.getElementById('MathJax-script').addEventListener('load', callback);
+        }
+    }
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化符号面板
+        initSymbolPanel();
+
+        // 初始化标签页
+        initTabs();
+
+        // 绑定按钮事件
+        bindButtonEvents();
+
+        // 初始预览
+        whenMathJaxReady(function() {
+            MathJax.typesetPromise();
+        });
+    });
+
+    // 初始化符号面板
+    function initSymbolPanel() {
+        // 基础数学符号
+        const basicSymbols = [
+            '\\pm', '\\infty', '=', '\\neq', '~', '\\times', '\\div', '!', '\\propto',
+            '<', '\\ll', '>', '\\gg', '\\le', '\\geq', '\\mp', '\\cong', '\\approx', '\\equiv'
+        ];
+
+        // 关系运算符
+        const relationSymbols = [
+            '\\forall', '\\exists', '\\nexists', '\\in', '\\ni', '\\notin',
+            '\\subset', '\\supset', '\\subseteq', '\\supseteq'
+        ];
+
+        // 箭头符号
+        const arrowSymbols = [
+            '\\leftarrow', '\\rightarrow', '\\uparrow', '\\downarrow',
+            '\\leftrightarrow', '\\Rightarrow', '\\Leftarrow', '\\Leftrightarrow'
+        ];
+
+        // 希腊字母(小写)
+        const greekLowercase = [
+            '\\alpha', '\\beta', '\\gamma', '\\delta', '\\varepsilon', '\\epsilon',
+            '\\zeta', '\\eta', '\\theta', '\\vartheta', '\\iota', '\\kappa'
+        ];
+
+        // 希腊字母(大写)
+        const greekUppercase = [
+            '\\Gamma', '\\Delta', '\\Theta', '\\Lambda', '\\Xi', '\\Pi',
+            '\\Sigma', '\\Upsilon', '\\Phi', '\\Psi', '\\Omega'
+        ];
+
+        // 二元运算符
+        const binaryOperators = [
+            '+', '-', '\\div', '\\times', '\\pm', '\\mp', '\\propto',
+            '/', '\\ast', '\\circ', '\\bullet', '\\cdot'
+        ];
+
+        // N元运算符
+        const nOperators = [
+            '\\sum', '\\prod', '\\int', '\\oint', '\\bigcup', '\\bigcap',
+            '\\bigoplus', '\\bigotimes', '\\bigodot'
+        ];
+
+        // 高级运算符
+        const highOperators = [
+            '\\oplus', '\\ominus', '\\otimes', '\\oslash', '\\odot',
+            '\\star', '\\diamond', '\\wr', '\\triangle'
+        ];
+
+        // 渲染符号到对应容器
+        renderSymbols(basicSymbols, 'basic-symbols');
+        renderSymbols(relationSymbols, 'relation-symbols');
+        renderSymbols(arrowSymbols, 'arrow-symbols');
+        renderSymbols(greekLowercase, 'greek-lowercase');
+        renderSymbols(greekUppercase, 'greek-uppercase');
+        renderSymbols(binaryOperators, 'binary-operators');
+        renderSymbols(nOperators, 'n-operators');
+        renderSymbols(highOperators, 'high-operators');
+    }
+
+    // 渲染符号到指定容器
+    function renderSymbols(symbols, containerId) {
+        const container = document.getElementById(containerId);
+
+        symbols.forEach(symbol => {
+            const btn = document.createElement('div');
+            btn.className = 'symbol-btn';
+
+            const renderSpan = document.createElement('div');
+            renderSpan.className = 'symbol-render';
+            renderSpan.innerHTML = `\\(${symbol}\\)`;
+
+            const codeSpan = document.createElement('div');
+            codeSpan.className = 'symbol-code';
+            codeSpan.textContent = symbol;
+
+            btn.appendChild(renderSpan);
+            btn.appendChild(codeSpan);
+
+            btn.addEventListener('click', function() {
+                insertAtCursor('formulaInput', symbol);
+            });
+
+            container.appendChild(btn);
+        });
+    }
+
+    // 初始化标签页
+    function initTabs() {
+        const tabBtns = document.querySelectorAll('.tab-btn');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // 移除所有active类
+                tabBtns.forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                // 添加active类到当前标签
+                this.classList.add('active');
+                const tabId = this.getAttribute('data-tab') + '-tab';
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+    }
+
+    // 绑定按钮事件
+    function bindButtonEvents() {
+        // 预览按钮事件
+        document.getElementById('previewBtn').addEventListener('click', previewFormula);
+
+        // 清空按钮事件
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            document.getElementById('formulaInput').value = '';
+            document.getElementById('formulaPreview').innerHTML = '';
+        });
+
+        // 插入行内公式按钮事件
+        document.getElementById('addInlineBtn').addEventListener('click', function() {
+            insertAtCursor('formulaInput', '$ $');
+            moveCursor('formulaInput', -1);
+        });
+
+        // 插入显示公式按钮事件
+        document.getElementById('addDisplayBtn').addEventListener('click', function() {
+            insertAtCursor('formulaInput', '$$ $$');
+            moveCursor('formulaInput', -1);
+        });
+    }
+
+    // 预览公式
+    function previewFormula() {
+        const latex = document.getElementById('formulaInput').value.trim();
+        const preview = document.getElementById('formulaPreview');
+
+        if (latex) {
+            preview.innerHTML = `
+                    <h4>行内公式预览:</h4>
+                    <p>这是一个行内公式示例: \\(${latex}\\)</p>
+                    <h4>显示公式预览:</h4>
+                    <p>\\[${latex}\\]</p>
+                `;
+
+            whenMathJaxReady(function() {
+                MathJax.typesetPromise([preview]).catch(function(err) {
+                    console.error('MathJax渲染错误:', err);
+                    preview.innerHTML += '<div style="color:red">公式渲染错误，请检查语法</div>';
+                });
+            });
+        } else {
+            preview.innerHTML = '<p>请输入LaTeX公式进行预览</p>';
+        }
+    }
+
+    // 在光标位置插入文本
+    function insertAtCursor(textareaId, text) {
+        const textarea = document.getElementById(textareaId);
+        const startPos = textarea.selectionStart;
+        const endPos = textarea.selectionEnd;
+        const originalText = textarea.value;
+
+        textarea.value = originalText.substring(0, startPos) + text + originalText.substring(endPos);
+        textarea.focus();
+        textarea.selectionStart = startPos + text.length;
+        textarea.selectionEnd = startPos + text.length;
+    }
+
+    // 移动光标位置
+    function moveCursor(textareaId, offset) {
+        const textarea = document.getElementById(textareaId);
+        const currentPos = textarea.selectionStart;
+        textarea.selectionStart = currentPos + offset;
+        textarea.selectionEnd = currentPos + offset;
+        textarea.focus();
+    }
+</script>
+</body>
+</html>

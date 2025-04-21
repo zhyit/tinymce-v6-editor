@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>公式</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #e3e2e2;
+        }
+        .title {
+            height: 30px;
+            line-height: 30px;
+            padding-left: 10px;
+            font-weight: bold;
+            font-size: 15px;
+        }
+        .symbol-main {
+            display: flex;
+            align-items: center;
+            position: relative;
+            background: white;
+            border-bottom: 1px solid #ccc;
+            z-index: 1;
+        }
+        .symbol-basic {
+            padding: 10px 5px;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        .symbol-basic-choice {
+            padding: 3px;
+            border: 1px solid #dddddd;
+            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            height: 60px;
+            width: 640px;
+        }
+        .symbol-basic-choice-item {
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 0;
+            border: 1px solid #aeaeae;
+            transition: all .2s ease;
+        }
+        .symbol-basic-choice-item:hover {
+            z-index: 10;
+            cursor: pointer;
+            transform: scale(2);
+            background: #fff;
+        }
+        .symbol-show-other-btn {
+            height: 66px;
+            width: 20px;
+            border: 1px solid #a7a3a3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
+        .symbol-show-other-btn:hover {
+            cursor: pointer;
+        }
+        .symbol-advanced {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-left: 1px solid #cccccc;
+            border-right: 1px solid #cccccc;
+            padding: 5px;
+            margin: 0 5px;
+        }
+        .show-content {
+            background-color: white;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .independence-panel-item {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            justify-content: end;
+            padding: 6px;
+            height: 85px;
+            border-radius: 5px;
+            border: none;
+            outline: none;
+            position: relative;
+        }
+        .independence-panel-item:hover {
+            cursor: pointer;
+            background-color: #e8e8e8;
+        }
+        .symbol-basic-panel {
+            border: 1px solid black;
+            position: absolute;
+            top: 0;
+            width: calc(100% - 8px);
+            background-color: white;
+        }
+        .symbol-basic-panel-sel {
+            border-bottom: 1px solid #cccccc;
+            display: flex;
+            justify-content: right;
+            padding: 3px;
+        }
+        .panel-sel {
+            border: none;
+            outline: none;
+            padding: 3px;
+            text-align: center;
+        }
+        .panel-sel:hover {
+            cursor: pointer;
+            background-color: #e8e8e8;
+        }
+        .panel-sel:visited {
+            border: none;
+        }
+        .panel-item {
+            padding: 5px 10px;
+            border-bottom: 1px solid #dddddd;
+        }
+        .panel-title {
+            font-weight: bold;
+            font-size: 13px;
+        }
+        .chart-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .edit-content {
+            border: none;
+            width: 100%;
+            outline: none;
+            padding: 10px;
+            background-color: white;
+            box-sizing: border-box;
+            resize: none;
+        }
+        .panel-hidden {
+            display: none;
+        }
+        .panel-show {
+            display: block;
+        }
+        .detail-panel {
+            border: 1px solid #dddddd;
+            position: absolute;
+            top: 100px;
+            left: 0;
+            background-color: white;
+            width: 350px;
+            max-height: 550px;
+            overflow-y: auto;
+        }
+        .independence-chart-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+        .independence-panel-symbol-item {
+            border: 1px solid #d8d8d9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            min-width: 65px;
+            height: 95px;
+            transition: box-shadow 0.3s;
+        }
+        .independence-panel-symbol-item:hover {
+            cursor: pointer;
+            box-shadow: 0 0 2px 2px #dddddd;
+        }
+        /* 滚动条整体部分 */
+        ::-webkit-scrollbar {
+            width: 5px; /* 滚动条的宽度 */
+            height: 5px; /* 滚动条的高度 */
+        }
+        /* 滚动条的轨道 */
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; /* 轨道的颜色 */
+        }
+        /* 滚动条滑块 */
+        ::-webkit-scrollbar-thumb {
+            background: #888; /* 滑块的颜色 */
+            border-radius: 10px; /* 滑块的圆角 */
+        }
+        /* 滑块悬停时的样式 */
+        ::-webkit-scrollbar-thumb:hover {
+            background: #b3b3b3; /* 滑块悬停时的颜色 */
+        }
+    </style>
+    <script defer src="mathjax-config.js"></script>
+    <script defer src="symbols.js"></script>
+    <script id="MathJax-script" defer src="es5/tex-mml-svg.js"></script>
+</head>
+<body>
+<div class="title">输入区域</div>
+<div class="symbol-main">
+    <div class="symbol-basic">
+        <div class="symbol-basic-choice"></div>
+        <div class="symbol-show-other-btn">⊽</div>
+        <div class="symbol-basic-panel panel-hidden">
+            <div class="symbol-basic-panel-sel">
+                <select class="panel-sel">
+                    <option value="0">基础数学</option>
+                    <option value="1">希腊字母</option>
+                    <option value="2">运算符</option>
+                    <option value="3">箭头</option>
+                    <option value="4">求反关系运算符</option>
+                    <option value="5">几何图形</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="symbol-advanced">
+        <div class="faction"></div>
+        <div class="super-sub-under"></div>
+        <div class="radical"></div>
+        <div class="calculus"></div>
+        <div class="big-calculate"></div>
+        <div class="bracket"></div>
+        <div class="fun"></div>
+        <div class="mark-symbol"></div>
+        <div class="limit"></div>
+        <div class="calculus-symbol"></div>
+        <div class="matrix"></div>
+    </div>
+</div>
+<textarea class="edit-content" rows="15"></textarea>
+<div class="title">输出区域</div>
+<div class="show-content"></div>
+<script>
+    let panelIndex = 0;
+    let panelItemIndex = 0;
+    let panelItemChartIndex = 0;
+    const show_content_el = document.querySelector('.show-content');
+    const edit_content_el = document.querySelector('.edit-content');
+    const symbol_basic_panel = document.querySelector('.symbol-basic-panel');
+    const symbol_basic_choice = document.querySelector('.symbol-basic-choice');
+
+    // 等待MathJax加载完成
+    function whenMathJaxReady(callback) {
+        if (MathJax && MathJax.typesetPromise) {
+            callback();
+        } else {
+            document.getElementById('MathJax-script').addEventListener('load', callback);
+        }
+    }
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded',  () => {
+
+        // 初始化符号面板
+        initSymbolPanel();
+
+        // 其它符号按钮
+        init_show_other_btn();
+
+        // 独立面板
+        initIndependencePanel();
+
+        //
+        init_edit_content_el();
+
+        // 点击文档其他任何地方关闭DIV
+        document.addEventListener('click', (e) => {
+            symbol_basic_panel_close();
+            panel_close();
+        });
+
+        // 初始预览
+        whenMathJaxReady(() => {
+            MathJax.typesetPromise();
+        });
+        edit_content_el.focus();
+    });
+
+    function initSymbolPanel() {
+        symbol_basic_choice.innerHTML = '';
+        let charts = LATEX_PANEL[panelIndex].charts[panelItemIndex].charts;
+        if (charts.length > 40) {
+            let n = charts.length - panelItemChartIndex;
+            if (n >= 40) {
+                charts = charts.slice(panelItemChartIndex, panelItemChartIndex + 40);
+            } else {
+                let i = panelItemChartIndex - (40 - n);
+                charts = charts.slice(i, i + 40);
+            }
+        }
+        for (let k = 0; k < charts.length; k++) {
+            symbol_basic_choice.appendChild(init_latex_el(charts[k]));
+        }
+    }
+
+    function initIndependencePanel() {
+        //分式
+        init_independence_panel_fraction('faction', LATEX_FRACTION_PANEL);
+        //上下标
+        init_independence_panel_fraction('super-sub-under', LATEX_SUPER_SUB_UNDER_PANEL);
+        //根式
+        init_independence_panel_fraction('radical', LATEX_RADICAL_PANEL);
+        //积分
+        init_independence_panel_fraction('calculus', LATEX_CALCULUS_PANEL);
+        //大型运算符
+        init_independence_panel_fraction('big-calculate', LATEX_BIG_CALCULATE_PANEL);
+        //括号
+        init_independence_panel_fraction('bracket', LATEX_BRACKET_PANEL);
+        //函数
+        init_independence_panel_fraction('fun', LATEX_FUN_PANEL);
+        //标注符号
+        init_independence_panel_fraction('mark-symbol', LATEX_SYMBOL_MARK_PANEL);
+        //极限和对数
+        init_independence_panel_fraction('limit', LATEX_LIMIT_PANEL);
+        //运算符
+        init_independence_panel_fraction('calculus-symbol', LATEX_CALCULATE_SYMBOL_BASE_PANEL);
+        //矩阵
+        init_independence_panel_fraction('matrix', LATEX_MATRIX_PANEL);
+    }
+
+    function init_independence_panel_fraction(className, latexData) {
+        const panelEl = document.querySelector(`.${className}`);
+        panelEl.classList.add('independence-panel-item');
+        const latexEl = document.createElement('div');
+        latexEl.innerHTML = '$' + latexData.latex + '$';
+        panelEl.appendChild(latexEl);
+        const nameEl = document.createElement('div');
+        nameEl.innerHTML = latexData.name;
+        panelEl.appendChild(nameEl);
+        const detailPanel = document.createElement('div');
+        detailPanel.classList.add('detail-panel');
+        detailPanel.classList.add('panel-hidden');
+        for (let i = 0; i < latexData.charts.length; i++) {
+            detailPanel.appendChild(init_independence_panel_item(latexData.charts[i]));
+        }
+        panelEl.appendChild(detailPanel);
+        panelEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            symbol_basic_panel_close();
+            detailPanel.classList.remove('panel-hidden');
+            detailPanel.classList.add('panel-show');
+        })
+    }
+
+    function init_independence_panel_item(panelData) {
+        let charts = panelData.charts;
+        const panelItemEl = document.createElement('div');
+        panelItemEl.classList.add('panel-item');
+        const titleEl = document.createElement('div');
+        titleEl.innerText = panelData.name;
+        titleEl.classList.add('panel-title');
+        panelItemEl.appendChild(titleEl);
+        const chartPanelEl = document.createElement('div');
+        chartPanelEl.classList.add('independence-chart-panel');
+        panelItemEl.appendChild(chartPanelEl);
+        for (let i = 0; i < charts.length; i++) {
+            let node = init_independence_latex_el(charts[i]);
+            node.addEventListener('click', (e) => {
+                e.stopPropagation();
+                panel_close();
+                symbol_basic_panel_close();
+            })
+            chartPanelEl.appendChild(node);
+        }
+        return panelItemEl;
+    }
+
+    function init_independence_latex_el(latex) {
+        const latexEl = document.createElement('div');
+        latexEl.innerHTML = '$' + latex + '$';
+        latexEl.setAttribute('data-latex', latex);
+        latexEl.classList.add('independence-panel-symbol-item');
+        latexEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            edit_content_el.value += latex;
+            setResult(edit_content_el.value);
+        })
+        return latexEl;
+    }
+
+    function panel_close() {
+        let el = document.querySelector('.panel-show');
+        if (el) {
+            el.classList.remove('panel-show');
+            el.classList.add('panel-hidden');
+            edit_content_el.focus();
+        }
+    }
+
+    function init_panel_symbol() {
+        symbol_basic_panel.innerHTML = '';
+        const panel_sel_div = document.createElement('div');
+        panel_sel_div.classList.add('symbol-basic-panel-sel');
+        panel_sel_div.innerHTML = `<select class="panel-sel">
+                        <option value="0">基础数学</option>
+                        <option value="1">希腊字母</option>
+                        <option value="2">运算符</option>
+                        <option value="3">箭头</option>
+                        <option value="4">求反关系运算符</option>
+                        <option value="5">几何图形</option>
+                    </select>`;
+        let panel_sel_el = panel_sel_div.querySelector('.panel-sel');
+        panel_sel_el.value = panelIndex;
+        panel_sel_el.addEventListener('click', (e) => {
+            e.stopPropagation();
+        })
+        panel_sel_el.addEventListener('change', () => {
+            panelIndex = panel_sel_el.value;
+            panelItemIndex = 0;
+            panelItemChartIndex = 0;
+            init_panel_symbol()
+        })
+        symbol_basic_panel.appendChild(panel_sel_div);
+
+        let panels = LATEX_PANEL[panelIndex].charts;
+        for (let i = 0; i < panels.length; i++) {
+            symbol_basic_panel.appendChild(init_panel_item(panels[i], i));
+        }
+        MathJax.typesetPromise([symbol_basic_panel]);
+    }
+
+    function init_panel_item(panel, index) {
+        let charts = panel.charts;
+        const panelItemEl = document.createElement('div');
+        panelItemEl.classList.add('panel-item');
+        const titleEl = document.createElement('div');
+        titleEl.innerText = panel.name;
+        titleEl.classList.add('panel-title');
+        panelItemEl.appendChild(titleEl);
+        const chartPanelEl = document.createElement('div');
+        chartPanelEl.classList.add('chart-panel');
+        panelItemEl.appendChild(chartPanelEl);
+        for (let i = 0; i < charts.length; i++) {
+            let node = init_latex_el(charts[i]);
+            node.addEventListener('click', (e) => {
+                e.stopPropagation();
+                panelItemIndex = index;
+                panelItemChartIndex = i;
+                symbol_basic_panel_close();
+            })
+            chartPanelEl.appendChild(node);
+        }
+        return panelItemEl;
+    }
+
+    function init_latex_el(latex) {
+        const latexEl = document.createElement('div');
+        latexEl.innerHTML = '$' + latex + '$';
+        latexEl.setAttribute('data-latex', latex);
+        latexEl.classList.add('symbol-basic-choice-item');
+        latexEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            edit_content_el.value += latex;
+            setResult(edit_content_el.value);
+        })
+        return latexEl;
+    }
+
+    function init_show_other_btn() {
+        const symbol_show_other_btn = document.querySelector('.symbol-show-other-btn');
+        symbol_show_other_btn.addEventListener('click', (e) => {
+            e.stopPropagation(); // 阻止事件冒泡
+            panel_close();
+            init_panel_symbol();
+            symbol_basic_panel.classList.remove('panel-hidden');
+            symbol_basic_panel.classList.add('panel-show');
+        })
+        // 点击DIV本身 - 阻止关闭（可选）
+        symbol_basic_panel.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
+
+    function symbol_basic_panel_close() {
+        initSymbolPanel();
+        panel_close();
+        MathJax.typesetPromise([symbol_basic_choice]);
+    }
+
+    function setResult(text) {
+        MathJax.typesetClear([show_content_el]);
+        show_content_el.setAttribute('data-latex', '');
+        if (text) {
+            const code = '$ ' + text + ' $';
+            show_content_el.setAttribute('data-latex', text);
+            show_content_el.innerHTML = code;
+            MathJax.typesetPromise([show_content_el]);
+        } else {
+            show_content_el.innerHTML = ''
+        }
+    }
+
+    function init_edit_content_el() {
+        edit_content_el.addEventListener('input', async (e) => {
+            setResult(e.target.value)
+        })
+    }
+
+</script>
+</body>
+</html>
